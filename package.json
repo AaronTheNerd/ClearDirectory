@@ -3,6 +3,7 @@
   "displayName": "Clear Directory",
   "description": "Clears a directory of its contents",
   "version": "0.0.1",
+  "publisher": "bargeaaron",
   "engines": {
     "vscode": "^1.81.0"
   },
