@@ -23,9 +23,17 @@ export function activate(context: vscode.ExtensionContext) {
       }
       const dirContent = await fs.readDirectory(dirUri);
 
+      const configs = vscode.workspace.getConfiguration("cleardirectory");
+      const deleteSubdirectories = configs.get("deleteSubdirectories");
+      let topLevelDirectories: [string, vscode.FileType][] = [];
+      if (deleteSubdirectories) {
+        topLevelDirectories = getDirectoriesInDir(dirContent);
+      }
+
       // Get all files located within directory
-      const files = getFilesInDir(dirContent);
-      if (files.length === 0) {
+      const topLevelFiles = getFilesInDir(dirContent);
+      const topLevelResources = [...topLevelFiles, ...topLevelDirectories];
+      if (topLevelResources.length === 0) {
         showError(getDirectoryName(dirUri));
         return;
       }
@@ -33,13 +41,14 @@ export function activate(context: vscode.ExtensionContext) {
       // Confirm choice with user
       const warningResponse = await showWarning(
         getDirectoryName(dirUri),
-        files.length
+        topLevelFiles.length,
+        topLevelDirectories.length
       );
       if (warningResponse === undefined) {
         return;
       }
 
-      deleteFiles(dirUri, files);
+      deleteFiles(dirUri, topLevelResources);
     }
   );
 
@@ -66,26 +75,57 @@ function getFilesInDir(
 
 function showError(dir: string) {
   vscode.window.showErrorMessage(
-    `There are no files to clear from directory '${dir}'.`
+    `There is nothing to clear from directory '${dir}'.`
   );
+}
+
+function getDirectoriesInDir(
+  dirContent: [string, vscode.FileType][]
+): [string, vscode.FileType][] {
+  return dirContent.filter((fileOrDir) => {
+    const fileType = fileOrDir[1];
+    return fileType === vscode.FileType.Directory;
+  });
 }
 
 function showWarning(
   dir: string,
-  filesToBeDeleted: number
+  filesToBeDeleted: number,
+  foldersToBeDeleted: number
 ): Thenable<"Continue" | undefined> {
+  const infoString = getInfoString(filesToBeDeleted, foldersToBeDeleted);
+  const message = `Clearing directory '${dir}' would result in ${infoString} being deleted`;
   return vscode.window.showWarningMessage(
-    `Clearing directory '${dir}' would result in ${filesToBeDeleted} files being deleted.`,
+    message,
     { modal: true },
     "Continue"
   );
 }
 
-function deleteFiles(dirUri: vscode.Uri, files: [string, vscode.FileType][]) {
+function getInfoString(filesToBeDeleted: number, foldersToBeDeleted: number) {
+  let infoStrings = [];
+  if (filesToBeDeleted > 0) {
+    let fileString = `${filesToBeDeleted} file`;
+    if (filesToBeDeleted > 1) {
+      fileString += "s";
+    }
+    infoStrings.push(fileString);
+  }
+  if (foldersToBeDeleted > 0) {
+    let folderString = `${foldersToBeDeleted} folder`
+    if (foldersToBeDeleted > 1) {
+      folderString += "s";
+    }
+    infoStrings.push(folderString);
+  }
+  return infoStrings.join(" and ");
+}
+
+function deleteFiles(dirUri: vscode.Uri, resources: [string, vscode.FileType][]) {
   const fs = vscode.workspace.fs;
-  files.forEach((file) => {
-    const fileName = file[0];
-    const fileUri = vscode.Uri.joinPath(dirUri, fileName);
-    fs.delete(fileUri);
+  resources.forEach((resource) => {
+    const resourceName = resource[0];
+    const resourceUri = vscode.Uri.joinPath(dirUri, resourceName);
+    fs.delete(resourceUri, { recursive: true });
   });
 }
