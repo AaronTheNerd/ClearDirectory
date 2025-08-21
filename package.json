@@ -2,7 +2,7 @@
   "name": "cleardirectory",
   "displayName": "Clear Directory",
   "description": "Clears a directory of its contents",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "bargeaaron",
   "engines": {
     "vscode": "^1.81.0"
