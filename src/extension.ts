@@ -112,7 +112,7 @@ function getInfoString(filesToBeDeleted: number, foldersToBeDeleted: number) {
     infoStrings.push(fileString);
   }
   if (foldersToBeDeleted > 0) {
-    let folderString = `${foldersToBeDeleted} folder`
+    let folderString = `${foldersToBeDeleted} folder`;
     if (foldersToBeDeleted > 1) {
       folderString += "s";
     }

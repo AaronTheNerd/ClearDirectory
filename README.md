@@ -14,7 +14,7 @@ This can also be achieved by pressing `Delete` when the folder is selected in th
 
 ### 0.1.0
 
-Added ability to optionally delete subdirectories. Togglable through the `cleardirectory.deleteSubdirectories` setting, false be default.
+Added ability to optionally delete subdirectories. Togglable through the `cleardirectory.deleteSubdirectories` setting, false by default.
 
 ### 0.0.1
 
